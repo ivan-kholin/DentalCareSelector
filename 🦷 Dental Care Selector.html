@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dental Care Selector — Premium Edition</title>
+<style>
+  :root {
+    --bg: #f0f5fa;
+    --card-bg: #ffffff;
+    --primary: #0a4b7a;
+    --accent: #3a9bd5;
+    --text: #1e293b;
+    --muted: #5f7d9c;
+    --warning: #f59e0b;
+    --border: #dce4ec;
+    --shadow: 0 8px 32px rgba(0,0,0,0.08);
+    --gold: #d4af37;
+    --gold-light: #f7e8b4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 1.5rem 1rem;
+  }
+  .container {
+    max-width: 700px;
+    width: 100%;
+    background: var(--card-bg);
+    border-radius: 30px;
+    box-shadow: var(--shadow);
+    padding: 2rem 1.8rem;
+    position: relative;
+    transition: all 0.2s;
+  }
+  h1 { font-size: 1.8rem; color: var(--primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem; }
+  .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
+  .disclaimer {
+    background: #fdf9ed;
+    border-left: 5px solid var(--warning);
+    padding: 1rem 1.2rem;
+    border-radius: 14px;
+    font-size: 0.82rem;
+    color: #7a5c12;
+    margin-bottom: 1.8rem;
+    line-height: 1.5;
+  }
+  .badge { background: var(--primary); color: #fff; border-radius: 50px; padding: 0.2rem 0.8rem; font-size: 0.7rem; font-weight: 600; }
+  /* Режимы */
+  .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 1.2rem 0 1.8rem;
+  }
+  .mode-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0.8rem 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .mode-card:hover { border-color: var(--accent); background: #e8f1f9; }
+  .mode-card.selected { border-color: var(--primary); background: #e2edf8; box-shadow: 0 0 0 2px var(--primary); }
+  .mode-card .mode-icon { font-size: 2.2rem; display: block; }
+  .mode-card .mode-label { font-weight: 600; font-size: 0.85rem; margin-top: 0.3rem; }
+  .mode-card .mode-desc { font-size: 0.7rem; color: var(--muted); }
+  .mode-card.premium { border-color: var(--gold); background: #fefcf0; }
+  .mode-card.premium.selected { border-color: var(--gold); background: #f9f3d6; box-shadow: 0 0 0 2px var(--gold); }
+  .mode-card .premium-badge { position: absolute; top: -8px; right: -8px; background: var(--gold); color: #fff; font-size: 0.6rem; padding: 0.15rem 0.6rem; border-radius: 50px; font-weight: 700; }
+  .step-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .step { text-align: center; flex: 1; opacity: 0.5; transition: 0.2s; }
+  .step.active { color: var(--primary); font-weight: 600; opacity: 1; }
+  .step.done { color: #2b7a4b; opacity: 0.8; }
+  .question-block {
+    background: #f9fcff;
+    border-radius: 18px;
+    padding: 1.5rem 1.2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+  }
+  .question-text {
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
+  }
+  .options label {
+    display: block;
+    padding: 0.7rem 1rem;
+    margin-bottom: 0.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+  .options label:hover { border-color: var(--accent); background: #eef7ff; }
+  .options input { margin-right: 0.6rem; }
+  .btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 14px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    width: 100%;
+    transition: 0.2s;
+  }
+  .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    margin-top: 0.5rem;
+  }
+  .btn-gold { background: var(--gold); color: #1e293b; }
+  .btn-gold:hover { background: #c9a32a; }
+  .flex { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .flex .btn { flex: 1; min-width: 80px; }
+  .results-tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin: 1.5rem 0 1rem;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .tab-btn.gold.active { background: var(--gold); border-color: var(--gold); color: #1e293b; }
+  .tab-content { display: none; animation: fadeIn 0.3s; }
+  .tab-content.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .product-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .product-icon { font-size: 2rem; }
+  .product-info { flex: 1; }
+  .product-name { font-weight: 600; font-size: 0.95rem; }
+  .product-reason { font-size: 0.8rem; color: var(--muted); }
+  .buy-link {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .buy-link:hover { background: #217bbd; }
+  .summary-text { line-height: 1.7; background: #edf5fa; padding: 1.2rem; border-radius: 14px; }
+  .prompt-box {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 14px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+    position: relative;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .copy-btn:hover { background: #0a6a9e; }
+  .footer-note {
+    margin-top: 2rem;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: center;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+  .consent-box { display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0 1rem; font-size: 0.85rem; }
+  .consent-box input { width: 18px; height: 18px; }
+  .hidden { display: none; }
+  .text-center { text-align: center; }
+  .mt-1 { margin-top: 0.5rem; }
+  .mb-1 { margin-bottom: 0.5rem; }
+  .gap-2 { gap: 0.5rem; }
+  .tag { background: #e6f0fa; border-radius: 20px; padding: 0.1rem 0.6rem; font-size: 0.7rem; color: var(--primary); }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+
+  <!-- Шаг 0: Приветствие и выбор режима -->
+  <div id="step-mode">
+    <h1>🦷 Dental Care Selector <span class="badge">Premium</span></h1>
+    <p class="subtitle">Персональный подбор средств гигиены полости рта. Выберите формат.</p>
+    <div class="disclaimer">
+      ⚕️ <strong>Важно:</strong> Сервис носит информационный характер. Не заменяет очную консультацию стоматолога. Рекомендации основаны на общих принципах гигиены. Перед применением средств проконсультируйтесь с врачом.
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card" data-mode="express" onclick="selectMode('express')">
+        <span class="mode-icon">⏱️</span>
+        <div class="mode-label">Экспресс</div>
+        <div class="mode-desc">3 вопроса · 1 мин</div>
+      </div>
+      <div class="mode-card" data-mode="basic" onclick="selectMode('basic')">
+        <span class="mode-icon">📋</span>
+        <div class="mode-label">Базовый</div>
+        <div class="mode-desc">8 вопросов · 3 мин</div>
+      </div>
+      <div class="mode-card" data-mode="pro" onclick="selectMode('pro')">
+        <span class="mode-icon">🔬</span>
+        <div class="mode-label">Профессиональный</div>
+        <div class="mode-desc">12 вопросов · 5 мин</div>
+      </div>
+      <div class="mode-card premium" data-mode="premium" onclick="selectMode('premium')">
+        <span class="premium-badge">✦ PREMIUM</span>
+        <span class="mode-icon">👑</span>
+        <div class="mode-label">Всё за меня</div>
+        <div class="mode-desc">Мгновенный подбор</div>
+      </div>
+    </div>
+
+    <button class="btn" id="startBtn" disabled onclick="startMode()">Начать</button>
+    <div style="margin-top:0.8rem;font-size:0.75rem;color:var(--muted);text-align:center;">Выберите режим, чтобы продолжить</div>
+  </div>
+
+  <!-- Шаг 1: Анкета (динамически) -->
+  <div id="step-questions" class="hidden">
+    <div id="questionContainer"></div>
+  </div>
+
+  <!-- Шаг 2: Результаты -->
+  <div id="step-results" class="hidden"></div>
+</div>
+
+<script>
+// ======================================================================
+// PRODUCT DATABASE (расширенная)
+// ======================================================================
+const PRODUCT_DB = [
+  { id: 'ultrasoft_brush', name: 'Curaprox CS 5460 Ultra Soft', icon: '🪥', desc: 'Ультрамягкая щётка с 5460 волокнами', category: 'brush', attr: { softness: 'ultrasoft' }, buyLink: '#', infoLink: '#' },
+  { id: 'sensitive_paste', name: 'Sensodyne Мгновенный Эффект', icon: '🦷', desc: 'Паста для чувствительных зубов', category: 'paste', attr: { rda: 'low', sensitivity: true }, buyLink: '#', infoLink: '#' },
+  { id: 'herbal_paste', name: 'R.O.C.S. Лечебные травы', icon: '🌿', desc: 'Паста на травах, мягкая формула', category: 'paste', attr: { rda: 'low', herbs: true }, buyLink: '#', infoLink: '#' },
+  { id: 'fluoride_paste', name: 'Elmex Защита от кариеса', icon: '🛡️', desc: 'С аминофторидом для укрепления эмали', category: 'paste', attr: { fluoride: 'high' }, buyLink: '#', infoLink: '#' },
+  { id: 'irrigator', name: 'Waterpik WP-660', icon: '💧', desc: 'Ирригатор для ухода за дёснами и конструкциями', category: 'device', attr: {}, buyLink: '#', infoLink: '#' },
+  { id: 'interdental_brush', name: 'Trisa Interdental (набор)', icon: '🧹', desc: 'Ёршики межзубные 5 размеров', category: 'interdental', attr: {}, buyLink: '#', infoLink: '#' },
+  { id: 'ortho_kit', name: 'Набор для брекетов: V-щётка + ёршики', icon: '🪥🧹', desc: 'Специальный уход при ортодонтических конструкциях', category: 'kit', attr: { ortho: true }, buyLink: '#', infoLink: '#' },
+  { id: 'mouthwash_alcohol_free', name: 'Listerine Zero', icon: '💠', desc: 'Ополаскиватель без спирта', category: 'mouthwash', attr: { alcoholFree: true }, buyLink: '#', infoLink: '#' },
+  { id: 'floss_standard', name: 'Oral-B Glide Pro-Health', icon: '🧵', desc: 'Флосс вощёный, не травмирует дёсны', category: 'floss', attr: {}, buyLink: '#', infoLink: '#' },
+  { id: 'floss_extra', name: 'TePe Mini Floss', icon: '🧵✨', desc: 'Флосс с узкой лентой для плотного контакта', category: 'floss', attr: {}, buyLink: '#', infoLink: '#' },
+  { id: 'electric_brush', name: 'Oral-B iO 4', icon: '⚡', desc: 'Электрическая щётка с датчиком давления', category: 'brush', attr: { electric: true }, buyLink: '#', infoLink: '#' },
+  { id: 'whitening_paste', name: 'Colgate Optic White', icon: '✨', desc: 'Паста с системой отбеливания', category: 'paste', attr: { whitening: true }, buyLink: '#', infoLink: '#' }
+];
+
+// ======================================================================
+// ВОПРОСЫ (три уровня)
+// ======================================================================
+const QUESTIONS = {
+  express: [
+    { id: 'bleeding_express', text: 'Кровоточат ли ваши дёсны?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'sometimes', label: 'Иногда' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'sensitivity_express', text: 'Есть ли чувствительность на холодное/горячее?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'mild', label: 'Незначительно' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'age_express', text: 'Ваша возрастная категория?', options: [
+      { value: 'under_18', label: 'До 18' },
+      { value: '18_45', label: '18–45' },
+      { value: 'over_45', label: 'Старше 45' }
+    ] }
+  ],
+  basic: [
+    { id: 'bleeding', text: 'Кровоточат ли у вас дёсны при чистке зубов или приёме пищи?', options: [
+      { value: 'yes', label: 'Да, регулярно' },
+      { value: 'sometimes', label: 'Иногда' },
+      { value: 'no', label: 'Нет, никогда' }
+    ] },
+    { id: 'ortho', text: 'Есть ли у вас брекеты, элайнеры или другие ортодонтические конструкции?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'implants', text: 'Имеются ли у вас имплантаты, коронки или мосты?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'sensitivity', text: 'Реагируют ли ваши зубы на холодное, горячее или сладкое?', options: [
+      { value: 'yes_severe', label: 'Да, сильно' },
+      { value: 'yes_mild', label: 'Слегка' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'caries_history', text: 'Был ли у вас кариес за последние 2 года?', options: [
+      { value: 'yes_multiple', label: 'Да, несколько зубов' },
+      { value: 'yes_one', label: 'Был один' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'smoking', text: 'Курите ли вы?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'current_brush', text: 'Какой щёткой вы пользуетесь сейчас?', options: [
+      { value: 'manual_medium', label: 'Обычная средней жёсткости' },
+      { value: 'manual_soft', label: 'Обычная мягкая' },
+      { value: 'electric', label: 'Электрическая' },
+      { value: 'dunno', label: 'Не знаю / Другая' }
+    ] },
+    { id: 'age_group', text: 'Ваша возрастная категория:', options: [
+      { value: 'under_18', label: 'Младше 18' },
+      { value: '18_45', label: '18–45' },
+      { value: 'over_45', label: 'Старше 45' }
+    ] }
+  ],
+  pro: [
+    // Базовые 8 + 4 профессиональных
+    { id: 'bleeding', text: 'Кровоточат ли у вас дёсны при чистке зубов или приёме пищи?', options: [
+      { value: 'yes', label: 'Да, регулярно' },
+      { value: 'sometimes', label: 'Иногда' },
+      { value: 'no', label: 'Нет, никогда' }
+    ] },
+    { id: 'ortho', text: 'Есть ли у вас брекеты, элайнеры или другие ортодонтические конструкции?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'implants', text: 'Имеются ли у вас имплантаты, коронки или мосты?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'sensitivity', text: 'Реагируют ли ваши зубы на холодное, горячее или сладкое?', options: [
+      { value: 'yes_severe', label: 'Да, сильно' },
+      { value: 'yes_mild', label: 'Слегка' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'caries_history', text: 'Был ли у вас кариес за последние 2 года?', options: [
+      { value: 'yes_multiple', label: 'Да, несколько зубов' },
+      { value: 'yes_one', label: 'Был один' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'smoking', text: 'Курите ли вы?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'no', label: 'Нет' }
+    ] },
+    { id: 'current_brush', text: 'Какой щёткой вы пользуетесь сейчас?', options: [
+      { value: 'manual_medium', label: 'Обычная средней жёсткости' },
+      { value: 'manual_soft', label: 'Обычная мягкая' },
+      { value: 'electric', label: 'Электрическая' },
+      { value: 'dunno', label: 'Не знаю / Другая' }
+    ] },
+    { id: 'age_group', text: 'Ваша возрастная категория:', options: [
+      { value: 'under_18', label: 'Младше 18' },
+      { value: '18_45', label: '18–45' },
+      { value: 'over_45', label: 'Старше 45' }
+    ] },
+    { id: 'pro_freq', text: 'Как часто вы посещаете стоматолога?', options: [
+      { value: '6m', label: 'Раз в 6 мес' },
+      { value: '12m', label: 'Раз в год' },
+      { value: 'rare', label: 'Реже 1 года' },
+      { value: 'never', label: 'Никогда / Не помню' }
+    ] },
+    { id: 'pro_diet', text: 'Как часто в вашем рационе присутствует сладкое/кислое?', options: [
+      { value: 'daily', label: 'Каждый день' },
+      { value: 'often', label: '2–3 раза в неделю' },
+      { value: 'rare', label: 'Редко' }
+    ] },
+    { id: 'pro_fluoride', text: 'Используете ли вы фторированные зубные пасты?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'no', label: 'Нет' },
+      { value: 'unsure', label: 'Не уверен' }
+    ] },
+    { id: 'pro_meds', text: 'Принимаете ли вы лекарства, вызывающие сухость во рту (антигистаминные, антидепрессанты)?', options: [
+      { value: 'yes', label: 'Да' },
+      { value: 'no', label: 'Нет' },
+      { value: 'unsure', label: 'Не знаю' }
+    ] }
+  ]
+};
+
+// ======================================================================
+// ЯДРО ПОДБОРА (MATCHING ENGINE)
+// ======================================================================
+function matchProducts(answers, mode) {
+  const selected = [];
+  const add = (id) => { if (!selected.includes(id)) selected.push(id); };
+
+  // Универсальные правила
+  const bleed = answers.bleeding || answers.bleeding_express;
+  const sens = answers.sensitivity || answers.sensitivity_express;
+  const age = answers.age_group || answers.age_express;
+  const caries = answers.caries_history;
+  const ortho = answers.ortho;
+  const implants = answers.implants;
+  const smoke = answers.smoking;
+  const brush = answers.current_brush;
+
+  // 1. Кровоточивость → мягкая щётка + травяная паста + ирригатор (если импланты/ортодонтия)
+  if (bleed === 'yes' || bleed === 'sometimes') {
+    add('ultrasoft_brush');
+    add('herbal_paste');
+    if (implants === 'yes' || ortho === 'yes') add('irrigator');
+  }
+
+  // 2. Чувствительность → паста для чувствительных
+  if (sens === 'yes_severe' || sens === 'yes' || sens === 'mild' || sens === 'yes_mild') {
+    add('sensitive_paste');
+  }
+
+  // 3. Кариес → фтор-паста
+  if (caries === 'yes_multiple' || caries === 'yes_one') {
+    add('fluoride_paste');
+  }
+
+  // 4. Ортодонтия → орто-набор + ирригатор
+  if (ortho === 'yes') {
+    add('ortho_kit');
+    add('irrigator');
+  }
+
+  // 5. Имплантаты → ёршики + ирригатор
+  if (implants === 'yes') {
+    add('interdental_brush');
+    add('irrigator');
+  }
+
+  // 6. Курение → ополаскиватель без спирта + травяная паста (если нет)
+  if (smoke === 'yes') {
+    add('mouthwash_alcohol_free');
+    if (!selected.includes('herbal_paste') && !selected.includes('sensitive_paste')) add('herbal_paste');
+  }
+
+  // 7. Возраст 45+ → фтор-паста (если ещё нет)
+  if (age === 'over_45' && !selected.includes('fluoride_paste')) {
+    add('fluoride_paste');
+  }
+
+  // 8. Добавим флосс для всех (базовый уход)
+  add('floss_standard');
+
+  // 9. Электрическая щётка (если текущая electric или manual_medium)
+  if (brush === 'electric' || brush === 'manual_medium') {
+    add('electric_brush');
+  }
+
+  // 10. Профессиональные правила (только для pro режима)
+  if (mode === 'pro') {
+    const diet = answers.pro_diet;
+    const fluoride = answers.pro_fluoride;
+    const meds = answers.pro_meds;
+    if (diet === 'daily') {
+      add('whitening_paste'); // паста с отбеливанием может помочь при пигментации
+      add('mouthwash_alcohol_free');
+    }
+    if (fluoride === 'no' || fluoride === 'unsure') {
+      add('fluoride_paste');
+    }
+    if (meds === 'yes') {
+      add('mouthwash_alcohol_free');
+      add('irrigator');
+    }
+  }
+
+  return [...new Set(selected)];
+}
+
+// ======================================================================
+// Генерация резюме
+// ======================================================================
+function generateSummary(answers, mode) {
+  let lines = ['📋 Рекомендации на основе ваших ответов:\n'];
+  const bleed = answers.bleeding || answers.bleeding_express;
+  const sens = answers.sensitivity || answers.sensitivity_express;
+  const ortho = answers.ortho;
+  const implants = answers.implants;
+  const caries = answers.caries_history;
+  const smoke = answers.smoking;
+  const age = answers.age_group || answers.age_express;
+
+  if (bleed === 'yes' || bleed === 'sometimes') lines.push('• Кровоточивость дёсен — нужна ультрамягкая щётка и паста с растительными компонентами.');
+  if (sens === 'yes_severe' || sens === 'yes' || sens === 'yes_mild') lines.push('• Чувствительность зубов — используйте десенситивную пасту.');
+  if (caries === 'yes_multiple' || caries === 'yes_one') lines.push('• Риск кариеса — паста с фтором для реминерализации эмали.');
+  if (ortho === 'yes') lines.push('• Ортодонтические конструкции — V-образная щётка, ёршики, ирригатор.');
+  if (implants === 'yes') lines.push('• Имплантаты/коронки — межзубные ёршики и ирригатор.');
+  if (smoke === 'yes') lines.push('• Курение — бесспиртовой ополаскиватель и регулярная профгигиена.');
+  if (age === 'over_45') lines.push('• После 45 лет показана усиленная фторидная защита.');
+
+  lines.push('\n⚠️ Это не диагноз. Полную консультацию может дать только стоматолог после осмотра.');
+  lines.push('\n🔗 Дополнительные материалы: на вкладке «Средства» вы найдёте ссылки на подробные статьи и видео.');
+  return lines.join('\n');
+}
+
+// ======================================================================
+// Генерация промпта для ИИ
+// ======================================================================
+function generateAIPrompt(answers, mode) {
+  let prompt = `Ты — ассистент стоматолога. Данные профиля гигиены (режим "${mode}"):\n`;
+  for (const [k, v] of Object.entries(answers)) {
+    if (k.startsWith('pro_') || k.startsWith('premium_')) prompt += `- ${k}: ${v}\n`;
+  }
+  prompt += `\nДай общие рекомендации по уходу за полостью рта, перечисли подходящие категории средств (щётка, паста, ополаскиватель, флосс, ирригатор), подчеркни необходимость визита к стоматологу. Не имитируй диагноз.`;
+  return prompt;
+}
+
+// ======================================================================
+// UI ЛОГИКА
+// ======================================================================
+let selectedMode = null;
+let currentStep = 0;
+let userAnswers = {};
+let modeQuestions = [];
+
+function selectMode(mode) {
+  selectedMode = mode;
+  document.querySelectorAll('.mode-card').forEach(el => el.classList.remove('selected'));
+  document.querySelector(`.mode-card[data-mode="${mode}"]`)?.classList.add('selected');
+  document.getElementById('startBtn').disabled = false;
+}
+
+function startMode() {
+  if (!selectedMode) return;
+  document.getElementById('step-mode').classList.add('hidden');
+  document.getElementById('step-questions').classList.remove('hidden');
+
+  if (selectedMode === 'premium') {
+    // Премиум: без вопросов, сразу результаты
+    showPremiumResults();
+    return;
+  }
+
+  // Загружаем вопросы
+  modeQuestions = QUESTIONS[selectedMode] || QUESTIONS.basic;
+  currentStep = 0;
+  userAnswers = {};
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const container = document.getElementById('questionContainer');
+  if (currentStep >= modeQuestions.length) {
+    showResults();
+    return;
+  }
+  const q = modeQuestions[currentStep];
+  const total = modeQuestions.length;
+  const stepsHtml = Array.from({ length: total }, (_, i) => 
+    `<div class="step${i < currentStep ? ' done' : i === currentStep ? ' active' : ''}">${i+1}</div>`
+  ).join('');
+
+  const isRadio = true;
+  container.innerHTML = `
+    <div class="step-indicator">${stepsHtml}</div>
+    <div class="question-block">
+      <div class="question-text">${currentStep+1}. ${q.text}</div>
+      <div class="options" id="optionsGroup">
+        ${q.options.map((opt, idx) => `
+          <label>
+            <input type="radio" name="q_${q.id}" value="${opt.value}" ${userAnswers[q.id] === opt.value ? 'checked' : ''} onclick="enableNext()">
+            ${opt.label}
+          </label>
+        `).join('')}
+      </div>
+    </div>
+    <div class="flex">
+      <button class="btn" id="nextBtn" disabled onclick="nextQuestion()">Далее</button>
+    </div>
+    ${currentStep > 0 ? `<button class="btn btn-secondary" onclick="prevQuestion()">← Назад</button>` : ''}
+  `;
+  if (userAnswers[q.id]) document.getElementById('nextBtn').disabled = false;
+}
+
+function enableNext() {
+  const btn = document.getElementById('nextBtn');
+  if (btn) btn.disabled = false;
+}
+
+function nextQuestion() {
+  const q = modeQuestions[currentStep];
+  const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+  if (!selected) return;
+  userAnswers[q.id] = selected.value;
+  currentStep++;
+  if (currentStep < modeQuestions.length) {
+    renderQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function prevQuestion() {
+  if (currentStep > 0) {
+    currentStep--;
+    renderQuestion();
+  }
+}
+
+// ======================================================================
+// РЕЗУЛЬТАТЫ (общие)
+// ======================================================================
+function showResults() {
+  document.getElementById('step-questions').classList.add('hidden');
+  document.getElementById('step-results').classList.remove('hidden');
+  const productIds = matchProducts(userAnswers, selectedMode);
+  const summary = generateSummary(userAnswers, selectedMode);
+  const aiPrompt = generateAIPrompt(userAnswers, selectedMode);
+  renderResults(productIds, summary, aiPrompt, selectedMode);
+}
+
+function showPremiumResults() {
+  document.getElementById('step-questions').classList.add('hidden');
+  document.getElementById('step-results').classList.remove('hidden');
+  // Премиум: подбираем полный набор "золотой стандарт"
+  const premiumIds = ['ultrasoft_brush', 'sensitive_paste', 'fluoride_paste', 'irrigator', 'interdental_brush', 'mouthwash_alcohol_free', 'floss_standard', 'electric_brush', 'whitening_paste'];
+  const summary = '👑 Премиум-набор для ежедневной гигиены полости рта:\n\n• Ультрамягкая щётка (Curaprox CS 5460)\n• Паста для чувствительных (Sensodyne)\n• Фторидная паста (Elmex)\n• Ирригатор (Waterpik)\n• Ёршики межзубные (Trisa)\n• Ополаскиватель без спирта (Listerine Zero)\n• Флосс (Oral-B Glide)\n• Электрическая щётка (Oral-B iO 4)\n• Отбеливающая паста (Colgate)\n\n⚠️ Перед использованием любых средств проконсультируйтесь со стоматологом.';
+  const aiPrompt = 'Сгенерируй персонализированный план гигиены для премиум-клиента с использованием следующих средств: Curaprox CS 5460, Sensodyne, Elmex, Waterpik, Trisa, Listerine Zero, Oral-B Glide, Oral-B iO 4, Colgate Optic White. Укажи правильную технику чистки и необходимость профессиональной гигиены.';
+  renderResults(premiumIds, summary, aiPrompt, 'premium');
+}
+
+function renderResults(productIds, summary, aiPrompt, mode) {
+  const container = document.getElementById('step-results');
+  const productsHTML = productIds.map(id => {
+    const p = PRODUCT_DB.find(x => x.id === id);
+    if (!p) return '';
+    return `
+      <div class="product-card">
+        <div class="product-icon">${p.icon}</div>
+        <div class="product-info">
+          <div class="product-name">${p.name} <span class="tag">${p.category}</span></div>
+          <div class="product-reason">${p.desc}</div>
+          <div style="margin-top:4px;font-size:0.7rem;color:var(--accent);">
+            <a href="${p.infoLink}" target="_blank" style="color:var(--primary);text-decoration:underline;">Подробнее</a>
+          </div>
+        </div>
+        <a href="${p.buyLink}" target="_blank" class="buy-link">Купить</a>
+      </div>
+    `;
+  }).join('');
+
+  const isPremium = mode === 'premium';
+  container.innerHTML = `
+    <h2>${isPremium ? '👑 Ваш премиум-набор' : '✨ Ваше персональное резюме'}</h2>
+    <div class="results-tabs">
+      <button class="tab-btn${isPremium ? ' gold' : ''} active" onclick="switchTab('summary')">📋 Резюме</button>
+      <button class="tab-btn${isPremium ? ' gold' : ''}" onclick="switchTab('products')">🛒 Средства</button>
+      <button class="tab-btn${isPremium ? ' gold' : ''}" onclick="switchTab('ai')">🤖 Спросить ИИ</button>
+    </div>
+    <div id="tab-summary" class="tab-content active">
+      <div class="summary-text">${summary.replace(/\n/g, '<br>')}</div>
+    </div>
+    <div id="tab-products" class="tab-content">
+      ${productsHTML || '<p>Рекомендации отсутствуют. Проконсультируйтесь с врачом.</p>'}
+    </div>
+    <div id="tab-ai" class="tab-content">
+      <div class="disclaimer" style="margin-bottom:0.8rem;">⚠️ Вы копируете запрос для нейросети. Это симуляция, не медицинская консультация.</div>
+      <div class="prompt-box" id="promptText">${aiPrompt}
+        <button class="copy-btn" onclick="copyPrompt()">📋 Копировать</button>
+      </div>
+    </div>
+    <div class="consent-box">
+      <input type="checkbox" id="saveConsent"> <label for="saveConsent">Сохранить результаты в localStorage (только для вашего устройства)</label>
+    </div>
+    <button class="btn btn-secondary" style="margin-top:0.5rem;" onclick="saveToLocal()">💾 Сохранить</button>
+    <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="resetAll()">🔄 Пройти заново</button>
+      <button class="btn btn-secondary" style="flex:1;" onclick="printResults()">🖨️ Распечатать</button>
+    </div>
+    <div class="footer-note">
+      Сервис создан экспертом-гигиенистом. Все рекомендации носят информационный характер.<br>
+      ${isPremium ? 'Премиум-режим: персональный подбор без вопросов.' : ''}
+    </div>
+  `;
+}
+
+// ======================================================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ======================================================================
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+  // Ищем нужную кнопку
+  const btns = document.querySelectorAll('.tab-btn');
+  let idx = 0;
+  if (tabName === 'summary') idx = 0;
+  else if (tabName === 'products') idx = 1;
+  else if (tabName === 'ai') idx = 2;
+  if (btns[idx]) btns[idx].classList.add('active');
+}
+
+function copyPrompt() {
+  const text = document.getElementById('promptText').innerText.replace('📋 Копировать', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    if (btn) { btn.textContent = '✓ Скопировано'; setTimeout(() => btn.textContent = '📋 Копировать', 2000); }
+  });
+}
+
+function saveToLocal() {
+  const consent = document.getElementById('saveConsent');
+  if (!consent || !consent.checked) {
+    alert('Пожалуйста, отметьте согласие на сохранение данных.');
+    return;
+  }
+  const data = {
+    mode: selectedMode,
+    answers: userAnswers,
+    timestamp: new Date().toISOString()
+  };
+  try {
+    localStorage.setItem('dentalCareResults', JSON.stringify(data));
+    alert('✅ Результаты сохранены локально.');
+  } catch (e) {
+    alert('❌ Ошибка сохранения: ' + e.message);
+  }
+}
+
+function resetAll() {
+  if (confirm('Сбросить все данные и начать заново?')) {
+    document.getElementById('step-results').classList.add('hidden');
+    document.getElementById('step-questions').classList.add('hidden');
+    document.getElementById('step-mode').classList.remove('hidden');
+    selectedMode = null;
+    currentStep = 0;
+    userAnswers = {};
+    document.querySelectorAll('.mode-card').forEach(el => el.classList.remove('selected'));
+    document.getElementById('startBtn').disabled = true;
+  }
+}
+
+function printResults() {
+  window.print();
+}
+</script>
+</body>
+</html>
